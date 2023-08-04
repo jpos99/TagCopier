@@ -1,7 +1,7 @@
 
 # Tag Copier
 
-Tag Copier is a program designed to help users manage tags from source files and replicate them to corresponding destination files. This program is composed of a frontend interface built using PySimpleGUI and backend operations supported by the Python standard library and third-party modules like pyexiv2.
+Tag Copier is a program designed under request from a client, to help them manage image files translating the directory structure into tags at the corresponding files. This program is composed of a frontend interface built using PySimpleGUI and backend operations supported by the Python standard library and third-party modules like pyexiv2.
 
 ## Features:
 
