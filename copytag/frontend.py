@@ -1,3 +1,4 @@
+import datetime
 import os
 import PySimpleGUI as sg
 import backend
@@ -36,6 +37,7 @@ def gui():
 			if event == sg.WIN_CLOSED or event == 'Exit':
 				break
 			if event == 'Generate CSV':
+				print('inicio', datetime.datetime.now())
 				if not values['source'] or not os.path.exists(values['source']):
 					sg.popup_error('Por favor, forneça um caminho de origem válido.')
 					continue
