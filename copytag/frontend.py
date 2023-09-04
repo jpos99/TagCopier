@@ -44,7 +44,7 @@ def gui():
 				if not values['destination'] or not os.path.exists(values['destination']):
 					sg.popup_error('Por favor, forneça um caminho de destino válido.')
 					continue
-				csv_file = backend.csv_assembler(values['source'], values['destination'])
+				csv_file, source_destination_file_map = backend.csv_assembler(values['source'], values['destination'])
 				if not csv_file or not os.path.exists(csv_file):
 					sg.popup_error('Erro ao gerar o arquivo CSV.')
 					continue
@@ -56,7 +56,7 @@ def gui():
 					sg.popup_error('Arquivo CSV vazio ou inválido.')
 			elif event == 'Copy tags':
 				if csv_file and os.path.exists(csv_file):
-					updated_rows = backend.insert_tags_in_destinations(csv_file)
+					updated_rows = backend.insert_tags_in_destinations(source_destination_file_map)
 					for index in updated_rows:
 						window['-TABLE-'].update(row_colors=[(index, 'green', 'black')])
 				else:

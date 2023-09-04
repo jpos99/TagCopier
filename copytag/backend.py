@@ -8,7 +8,7 @@ def csv_assembler(source, destination):
 	csv_file = 'output.csv'
 	source_files = service.list_files(source)
 	csv_data = []
-
+	source_destination_file_map = {}
 	destination_file_map = service.build_file_map(destination)
 	for file in source_files:
 		origin_path_file = service.split_path(file)
@@ -18,21 +18,16 @@ def csv_assembler(source, destination):
 		destination_file_name = destination_path_file
 		if destination_path_file is not None:
 			destination_file_name = os.path.basename(destination_path_file)
+		source_destination_file_map[file] = {'tag': tag, 'destination': destination_path_file}
 		csv_data.append([file, origin_file_name, tag, destination_file_name, destination_path_file])
 
-	return service.generate_csv(csv_data, csv_file)
+	return service.generate_csv(csv_data, csv_file), source_destination_file_map
 
 
 
-def insert_tags_in_destinations(csvfile):
+def insert_tags_in_destinations(source_destination_file_map):
 	updated_rows = []
-	with open('output.csv', mode='r', encoding='utf-8') as csv_open:
-		print('csv =', csv_open)
-		list_of_files = csv.DictReader(csv_open)
-		for index, row in enumerate(list_of_files, start=1):
-			row = dict(row)
-			file_to_tag = row['DestinationPath']
-			tag = row['TAG']
-			if service.insert_tag_xmp(file_to_tag, tag):
-				updated_rows.append(index)
+	for source_file in source_destination_file_map.items():
+		if service.insert_tag_xmp(source_file['destination'], source_file['tag']):
+			updated_rows.append(source_file)
 	return updated_rows
