@@ -59,14 +59,17 @@ def find_related_file(file_map, file_name):
 
 def insert_tag_xmp(file, tag):
 	updated = False
-	with pyexiv2.Image(file) as image:
-		xmp_data = image.read_xmp()
-		xmp_keywords = xmp_data.get('Xmp.dc.subject', [])
-		if tag not in xmp_keywords:
-			xmp_keywords.append(tag)
-			updated = True
-
-		image.modify_xmp({'Xmp.dc.subject': xmp_keywords})
+	print(file)
+	try:
+		with pyexiv2.Image(file) as image:
+			xmp_data = image.read_xmp()
+			xmp_keywords = xmp_data.get('Xmp.dc.subject', [])
+			if tag not in xmp_keywords:
+				xmp_keywords.append(tag)
+				updated = True
+			image.modify_xmp({'Xmp.dc.subject': xmp_keywords})
+	except Exception as e:
+		print('ERRO =', e)
 	return updated
 
 
