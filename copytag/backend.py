@@ -24,7 +24,6 @@ def csv_assembler(source, destination):
 	return service.generate_csv(csv_data, csv_file), source_destination_file_map
 
 
-
 def insert_tags_in_destinations(source_destination_file_map):
 	updated_rows = []
 	for source_file in source_destination_file_map.items():
