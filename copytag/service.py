@@ -44,6 +44,7 @@ def build_file_map(directory):
 	file_map = {}
 	for folder, _, filenames in os.walk(directory):
 		for file in filenames:
+			print('file in map =', file)
 			relative_path = os.path.relpath(os.path.join(folder, file), directory)
 			file_map[relative_path] = os.path.join(folder, file)
 	return file_map
