@@ -2,6 +2,7 @@ import csv
 import datetime
 import imghdr
 import os
+from pathlib import Path
 
 import pyexiv2 as pyexiv2
 
@@ -42,11 +43,12 @@ def create_tag(path):
 
 def build_file_map(directory):
 	file_map = {}
-	for folder, _, filenames in os.walk(directory):
-		for file in filenames:
-			print('file in map =', file)
-			relative_path = os.path.relpath(os.path.join(folder, file), directory)
-			file_map[relative_path] = os.path.join(folder, file)
+	directory_path = Path(directory)
+	for file_path in directory_path.rglob('*'):
+		if file_path.is_file():
+			print('file in map =', file_path.name)
+			relative_path = file_path.relative_to(directory_path)
+			file_map[str(relative_path)] = str(file_path)
 	return file_map
 
 
