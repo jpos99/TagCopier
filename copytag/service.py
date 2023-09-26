@@ -68,6 +68,7 @@ def insert_tag_xmp(file, tag):
 				xmp_keywords.append(tag)
 				updated = True
 			image.modify_xmp({'Xmp.dc.subject': xmp_keywords})
+			image.modify_xmp({'Xmp.lr.weightedFlatSubject': xmp_keywords})
 	except Exception as e:
 		print('ERRO =', e)
 	return updated
