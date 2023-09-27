@@ -63,12 +63,16 @@ def insert_tag_xmp(file, tag):
 	try:
 		with pyexiv2.Image(file) as image:
 			xmp_data = image.read_xmp()
-			xmp_keywords = xmp_data.get('Xmp.dc.subject', [])
-			if tag not in xmp_keywords:
-				xmp_keywords.append(tag)
+			xmp_dc_keywords = xmp_data.get('Xmp.dc.subject', [])
+			xmp_lr_keywords = xmp_data.get('Xmp.lr.weightedFlatSubject', [])
+			if tag not in xmp_dc_keywords:
+				xmp_dc_keywords.append(tag)
 				updated = True
-			image.modify_xmp({'Xmp.dc.subject': xmp_keywords})
-			image.modify_xmp({'Xmp.lr.weightedFlatSubject': xmp_keywords})
+			if tag not in xmp_lr_keywords:
+				xmp_lr_keywords.append(tag)
+				updated = True
+			image.modify_xmp({'Xmp.dc.subject': xmp_dc_keywords})
+			image.modify_xmp({'Xmp.lr.weightedFlatSubject': xmp_lr_keywords})
 	except Exception as e:
 		print('ERRO =', e)
 	return updated
