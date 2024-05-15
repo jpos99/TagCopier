@@ -3,7 +3,6 @@ import datetime
 import imghdr
 import os
 from pathlib import Path
-
 import pyexiv2 as pyexiv2
 
 if os.name == 'nt':
@@ -53,22 +52,29 @@ def build_file_map(directory):
 
 
 def find_related_file(file_map, file_name):
-	print('related file =', file_map.get(file_name.replace('_olhos', ''), None))
-	return file_map.get(file_name.replace('_olhos', ''), None)
+	if file_map.get(file_name.replace('_olhos', '')):
+		return file_map.get(file_name.replace('_olhos', ''), None)
+	return None
+
 
 def read_tags_xmp(file):
 	with pyexiv2.Image(file) as image:
 		xmp_data = image.read_xmp()
 		xmp_dc_keywords = xmp_data.get('Xmp.dc.subject', [])
 		xmp_lr_keywords = xmp_data.get('Xmp.lr.weightedFlatSubject', [])
+		if not isinstance(xmp_lr_keywords, list):
+			xmp_lr_keywords = [xmp_data.get('Xmp.lr.weightedFlatSubject', [])]
 	return xmp_dc_keywords, xmp_lr_keywords
 
 
 def include_new_tag(file, tag):
 	xmp_dc_keywords, xmp_lr_keywords = read_tags_xmp(file)
+
 	if tag not in xmp_dc_keywords:
+		print('try append xmp dc keywords :', xmp_dc_keywords)
 		xmp_dc_keywords.append(tag)
 	if tag not in xmp_lr_keywords:
+		print('try append xmp lr key', xmp_lr_keywords)
 		xmp_lr_keywords.append(tag)
 	return xmp_dc_keywords, xmp_lr_keywords
 
@@ -81,7 +87,6 @@ def clear_tags_xmp(file):
 
 def insert_tag_xmp(file, tag):
 	updated = False
-	print(file)
 	xmp_dc_keywords, xmp_lr_keywords = include_new_tag(file, tag)
 	clear_tags_xmp(file)
 	with pyexiv2.Image(file) as image:

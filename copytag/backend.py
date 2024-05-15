@@ -27,6 +27,9 @@ def csv_assembler(source, destination):
 def insert_tags_in_destinations(source_destination_file_map):
 	updated_rows = []
 	for source_file in source_destination_file_map.items():
-		if service.insert_tag_xmp(source_file[1]['destination'], source_file[1]['tag']):
-			updated_rows.append(source_file)
+		if source_file[1]['destination'] is not None and source_file[1]['tag'] is not None:
+			service.ask_for_permission(source_file[1]['destination'])
+			if service.insert_tag_xmp(source_file[1]['destination'], source_file[1]['tag']):
+				# print('try append in updated_rows :', source_file)
+				updated_rows.append(source_file)
 	return updated_rows
