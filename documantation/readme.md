@@ -15,7 +15,7 @@ Tag Copier is a program designed under request from a client, to help them manag
 To get started, run the `frontend.py` to launch the GUI:
 
 ```bash
-python frontend.py
+python CopiaTag.py
 ```
 
 Once the application is active:

@@ -2,9 +2,19 @@ import csv
 import datetime
 import os
 import service as service
+import logging
+
+logging.basicConfig(
+	level=logging.DEBUG,
+	format='%(asctime)s - %(levelname)s - %(message)s',
+	handlers=[
+		logging.FileHandler("app.log"),
+	]
+)
 
 
 def csv_assembler(source, destination):
+	logging.info(f"Assembling CSV for source: {source} and destination: {destination}")
 	csv_file = 'output.csv'
 	source_files = service.list_files(source)
 	csv_data = []
@@ -20,16 +30,21 @@ def csv_assembler(source, destination):
 			destination_file_name = os.path.basename(destination_path_file)
 		source_destination_file_map[file] = {'tag': tag, 'destination': destination_path_file}
 		csv_data.append([file, origin_file_name, tag, destination_file_name, destination_path_file])
+		logging.debug(f"Processed file: {file}, Tag: {tag}, Destination: {destination_file_name}")
 
-	return service.generate_csv(csv_data, csv_file), source_destination_file_map
+	csv_result = service.generate_csv(csv_data, csv_file)
+	logging.info(f"CSV file generated: {csv_result}")
+	return csv_result, source_destination_file_map
 
 
 def insert_tags_in_destinations(source_destination_file_map):
+	logging.info("Inserting tags in destination files")
 	updated_rows = []
 	for source_file in source_destination_file_map.items():
 		if source_file[1]['destination'] is not None and source_file[1]['tag'] is not None:
 			service.ask_for_permission(source_file[1]['destination'])
 			if service.insert_tag_xmp(source_file[1]['destination'], source_file[1]['tag']):
-				# print('try append in updated_rows :', source_file)
 				updated_rows.append(source_file)
+				logging.debug(f"Updated destination file: {source_file[1]['destination']} with tag: {source_file[1]['tag']}")
+	logging.info(f"Total updated files: {len(updated_rows)}")
 	return updated_rows
