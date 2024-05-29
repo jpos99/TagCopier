@@ -150,8 +150,24 @@ def ask_for_permission(file_path):
 	if os.name == 'posix' or os.name == 'mac':
 		os.chmod(file_path, 0o600)
 	elif os.name == 'nt':
-		user_sid = win32api.GetUserNameEx(win32api.NameSamCompatible)
+		# Obtém o SID do usuário atual
+		user_name = win32api.GetUserNameEx(win32api.NameSamCompatible)
+		user_sid, domain, type = win32security.LookupAccountName(None, user_name)
+
+		# Cria um novo DACL (Discretionary Access Control List)
 		dacl = win32security.ACL()
-		dacl.AddAccessAllowedAce(win32security.ACL_REVISION, win32con.FILE_GENERIC_READ | win32con.FILE_GENERIC_WRITE, user_sid)
-		win32security.SetFileSecurity(file_path, win32security.DACL_SECURITY_INFORMATION, dacl)
+
+		# Adiciona uma ACE (Access Control Entry) que permite leitura e escrita ao usuário
+		dacl.AddAccessAllowedAce(win32security.ACL_REVISION, win32con.FILE_GENERIC_READ | win32con.FILE_GENERIC_WRITE,
+								 user_sid)
+
+		# Obtém o SD (Security Descriptor) atual do arquivo
+		sd = win32security.GetFileSecurity(file_path, win32security.DACL_SECURITY_INFORMATION)
+
+		# Define o novo DACL no SD
+		sd.SetSecurityDescriptorDacl(1, dacl, 0)
+
+		# Aplica o novo SD ao arquivo
+		win32security.SetFileSecurity(file_path, win32security.DACL_SECURITY_INFORMATION, sd)
+
 	logging.debug(f"Permission set for file: {file_path}")
