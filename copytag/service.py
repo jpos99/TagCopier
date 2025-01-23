@@ -147,27 +147,48 @@ def is_image(file_path):
 
 def ask_for_permission(file_path):
 	logging.info(f"Asking for permission to access file: {file_path}")
-	if os.name == 'posix' or os.name == 'mac':
-		os.chmod(file_path, 0o600)
-	elif os.name == 'nt':
-		# Obtém o SID do usuário atual
-		user_name = win32api.GetUserNameEx(win32api.NameSamCompatible)
-		user_sid, domain, type = win32security.LookupAccountName(None, user_name)
-
-		# Cria um novo DACL (Discretionary Access Control List)
-		dacl = win32security.ACL()
-
-		# Adiciona uma ACE (Access Control Entry) que permite leitura e escrita ao usuário
-		dacl.AddAccessAllowedAce(win32security.ACL_REVISION, win32con.FILE_GENERIC_READ | win32con.FILE_GENERIC_WRITE,
-								 user_sid)
-
-		# Obtém o SD (Security Descriptor) atual do arquivo
-		sd = win32security.GetFileSecurity(file_path, win32security.DACL_SECURITY_INFORMATION)
-
-		# Define o novo DACL no SD
-		sd.SetSecurityDescriptorDacl(1, dacl, 0)
-
-		# Aplica o novo SD ao arquivo
-		win32security.SetFileSecurity(file_path, win32security.DACL_SECURITY_INFORMATION, sd)
-
-	logging.debug(f"Permission set for file: {file_path}")
+	try:
+		if os.name == 'posix' or os.name == 'mac':
+			# Define permissões de leitura e escrita para o proprietário
+			os.chmod(file_path, 0o644)
+		elif os.name == 'nt':
+			# No Windows, verifica e ajusta as permissões usando win32security
+			sd = win32security.GetFileSecurity(
+				file_path, win32security.DACL_SECURITY_INFORMATION
+			)
+			dacl = sd.GetSecurityDescriptorDacl()
+			if dacl is None:
+				# Cria um novo DACL se não existir
+				dacl = win32security.ACL()
+			
+			# Obtém o SID do usuário atual
+			user_sid = win32security.GetTokenInformation(
+				win32security.OpenProcessToken(win32api.GetCurrentProcess(), win32security.TOKEN_QUERY),
+				win32security.TokenUser
+			)[0]
+			
+			# Adiciona permissões completas para o usuário atual
+			dacl.AddAccessAllowedAce(
+				win32security.ACL_REVISION,
+				win32security.FILE_GENERIC_READ | win32security.FILE_GENERIC_WRITE,
+				user_sid
+			)
+			
+			# Aplica as novas permissões
+			sd.SetSecurityDescriptorDacl(1, dacl, 0)
+			win32security.SetFileSecurity(
+				file_path, 
+				win32security.DACL_SECURITY_INFORMATION,
+				sd
+			)
+		
+		# Verifica se o arquivo pode ser acessado
+		with open(file_path, 'r+'):
+			pass
+		
+		logging.debug(f"Permissions successfully set for file: {file_path}")
+		return True
+		
+	except Exception as e:
+		logging.error(f"Failed to set permissions for file {file_path}: {str(e)}")
+		return False
