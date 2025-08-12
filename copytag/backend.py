@@ -15,12 +15,14 @@ logging.basicConfig(
 
 def csv_assembler(source, destination):
 	logging.info(f"Assembling CSV for source: {source} and destination: {destination}")
+	logging.debug("Listing source files and building destination map")
 	csv_file = 'output.csv'
 	source_files = service.list_files(source)
 	csv_data = []
 	source_destination_file_map = {}
 	destination_file_map = service.build_file_map(destination)
 	for file in source_files:
+		logging.debug(f"Processing source file: {file}")
 		origin_path_file = service.split_path(file)
 		origin_file_name = os.path.join(origin_path_file[-2], origin_path_file[-1])
 		tag = origin_path_file[-3]
@@ -41,10 +43,15 @@ def insert_tags_in_destinations(source_destination_file_map):
 	logging.info("Inserting tags in destination files")
 	updated_rows = []
 	for source_file in source_destination_file_map.items():
+		logging.debug(f"Evaluating mapping: {source_file}")
 		if source_file[1]['destination'] is not None and source_file[1]['tag'] is not None:
+			logging.debug(f"Requesting permission for: {source_file[1]['destination']}")
 			service.ask_for_permission(source_file[1]['destination'])
+			logging.debug(f"Inserting tag via service.insert_tag_xmp")
 			if service.insert_tag_xmp(source_file[1]['destination'], source_file[1]['tag']):
 				updated_rows.append(source_file)
 				logging.debug(f"Updated destination file: {source_file[1]['destination']} with tag: {source_file[1]['tag']}")
+		else:
+			logging.warning(f"Skipping mapping due to missing destination or tag: {source_file}")
 	logging.info(f"Total updated files: {len(updated_rows)}")
 	return updated_rows
