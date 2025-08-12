@@ -5,18 +5,13 @@ import os
 from pathlib import Path
 import pyexiv2 as pyexiv2
 import logging
+from logging_config import setup_logging
 
 if os.name == 'nt':
 	import win32api
 	import win32security
 
-logging.basicConfig(
-	level=logging.DEBUG,
-	format='%(asctime)s - %(levelname)s - %(message)s',
-	handlers=[
-		logging.FileHandler("app.log"),
-	]
-)
+setup_logging()
 
 
 def list_files(directory):

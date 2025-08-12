@@ -3,14 +3,9 @@ import datetime
 import os
 import service as service
 import logging
+from logging_config import setup_logging
 
-logging.basicConfig(
-	level=logging.DEBUG,
-	format='%(asctime)s - %(levelname)s - %(message)s',
-	handlers=[
-		logging.FileHandler("app.log"),
-	]
-)
+setup_logging()
 
 
 def csv_assembler(source, destination):

@@ -2,16 +2,11 @@ import backend
 import service
 from diagnostics import install_diagnostics_logging
 import logging
+from logging_config import setup_logging
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-logging.basicConfig(
-	level=logging.DEBUG,
-	format='%(asctime)s - %(levelname)s - %(message)s',
-	handlers=[
-		logging.FileHandler("app.log"),
-	]
-)
+setup_logging()
 
 
 class TagCopierApp:
