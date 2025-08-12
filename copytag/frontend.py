@@ -1,10 +1,11 @@
+import os
 import backend
 import service
 from diagnostics import install_diagnostics_logging
 import logging
 from logging_config import setup_logging
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 
 setup_logging()
 
@@ -59,12 +60,62 @@ class TagCopierApp:
 		self.dest_var.set(directory)
 
 	def generate_csv(self):
-		# Implementar lógica do CSV
-		pass
+		logging.info("Starting CSV generation (Tkinter)")
+		source = self.source_var.get()
+		dest = self.dest_var.get()
+		
+		if not source or not os.path.exists(source):
+			logging.error("Invalid source path provided")
+			tk.messagebox.showerror("Error", "Por favor, forneça um caminho de origem válido.")
+			return
+		
+		if not dest or not os.path.exists(dest):
+			logging.error("Invalid destination path provided")
+			tk.messagebox.showerror("Error", "Por favor, forneça um caminho de destino válido.")
+			return
+		
+		try:
+			self.csv_file, self.source_destination_file_map = backend.csv_assembler(source, dest)
+			if not self.csv_file or not os.path.exists(self.csv_file):
+				logging.error("Failed to generate CSV file")
+				tk.messagebox.showerror("Error", "Erro ao gerar o arquivo CSV.")
+				return
+			
+			table_data = service.read_csv(self.csv_file)
+			if table_data:
+				# Clear existing data
+				for row in self.tree.get_children():
+					self.tree.delete(row)
+				
+				# Insert new data (skip header if present)
+				for i, row in enumerate(table_data):
+					if i == 0 and row[0] == 'OriginPath':  # Skip header
+						continue
+					self.tree.insert('', tk.END, values=row)
+				
+				logging.info("CSV file displayed in the table")
+				tk.messagebox.showinfo("Success", f"CSV gerado com {len(table_data)-1} entradas.")
+			else:
+				logging.error("Empty or invalid CSV file")
+				tk.messagebox.showerror("Error", "Arquivo CSV vazio ou inválido.")
+		except Exception as e:
+			logging.exception("Error during CSV generation")
+			tk.messagebox.showerror("Error", f"Erro ao gerar CSV: {str(e)}")
 
 	def copy_tags(self):
-		# Implementar lógica de cópia
-		pass
+		logging.info("Starting tag copying process (Tkinter)")
+		if not hasattr(self, 'csv_file') or not self.csv_file or not os.path.exists(self.csv_file):
+			logging.error("CSV file not generated before copying tags")
+			tk.messagebox.showerror("Error", "Por favor, gere o arquivo CSV primeiro.")
+			return
+		
+		try:
+			updated_rows = backend.insert_tags_in_destinations(self.source_destination_file_map)
+			logging.info(f"Tags copied to {len(updated_rows)} files")
+			tk.messagebox.showinfo("Success", f"Tags copiadas para {len(updated_rows)} arquivos.")
+		except Exception as e:
+			logging.exception("Error during tag copying")
+			tk.messagebox.showerror("Error", f"Erro ao copiar tags: {str(e)}")
 
 
 def main():

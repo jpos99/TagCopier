@@ -1,3 +1,2 @@
 pyexiv2==2.5.0
 pywin32>=305; platform_system == "Windows"
-auto-py-to-exe

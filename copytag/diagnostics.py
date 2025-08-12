@@ -20,14 +20,12 @@ def _safe_get_version(package_name: str) -> str:
 
 def _log_package_versions() -> None:
     packages_to_check = [
-        "PySimpleGUI",
         "pyexiv2",
         "exiftool",
         "pywin32",
         "PySide6",
         "PyQt6",
         "PyQt5",
-        "auto-py-to-exe",
         "PyInstaller",
     ]
     for pkg in packages_to_check:
@@ -85,39 +83,7 @@ def _patch_tk_messagebox_logging() -> None:
         pass
 
 
-def _patch_pysimplegui_logging() -> None:
-    try:
-        import PySimpleGUI as sg  # type: ignore
 
-        def _wrap(fn_name: str):
-            fn = getattr(sg, fn_name, None)
-            if not callable(fn):
-                return
-
-            def wrapper(*args, **kwargs):
-                try:
-                    logging.warning(
-                        f"PySimpleGUI.{fn_name} called with args={args!r} kwargs={kwargs!r}"
-                    )
-                except Exception:
-                    pass
-                return fn(*args, **kwargs)
-
-            setattr(sg, fn_name, wrapper)
-
-        for name in [
-            "popup",
-            "popup_ok",
-            "popup_yes_no",
-            "popup_error",
-            "popup_get_text",
-            "popup_timed",
-            "popup_scrolled",
-        ]:
-            _wrap(name)
-    except Exception:
-        # PySimpleGUI may not be installed/used; ignore
-        pass
 
 
 def install_diagnostics_logging() -> None:
@@ -144,7 +110,6 @@ def install_diagnostics_logging() -> None:
     _log_package_versions()
     _patch_input_to_log()
     _patch_tk_messagebox_logging()
-    _patch_pysimplegui_logging()
 
     # Route warnings to logging
     logging.captureWarnings(True)
